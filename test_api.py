@@ -57,19 +57,21 @@ I only ate three cheeseburgers, why's everybody staring at me?""",
 
 if __name__ == "__main__":
     test_get_info("57b71a9e-614e-40bb-b0a4-a73e886e825e")
+
+    save_song("57b71a9e-614e-40bb-b0a4-a73e886e825e", ".suno")
     ##                   TRUE MUSIC WITH Lyrics
     id_m, clips_ids = test_generate_music_true()
-    for clip_id in clips_ids:
-        while True:
-            data, status_gen = test_get_info(clip_id)
-            print("GENERATE SONG | FALSE:\n", status_gen)
-            if status_gen == Song_generate_status.complete:
-                test_save_song(clip_id)
-                break
-            elif status_gen == Song_generate_status.error:
-                # Song either refund or credits returned
-                ## TODO: Return credit to user
-                break
+    # for clip_id in clips_ids:
+    #     while True:
+    #         data, status_gen = test_get_info(clip_id)
+    #         print("GENERATE SONG | FALSE:\n", status_gen)
+    #         if status_gen == Song_generate_status.complete:
+    #             test_save_song(clip_id)
+    #             break
+    #         elif status_gen == Song_generate_status.error:
+    #             # Song either refund or credits returned
+    #             ## TODO: Return credit to user
+    #             break
     ##                   FALSE MUSIC WITH DESC
     # # False
     # id_m, clips_ids = test_generate_music_with_description_false()

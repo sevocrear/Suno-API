@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 import time
@@ -150,7 +151,6 @@ def save_song(song_id, output_path=".suno/"):
         start_time = time.time()
         while True:
             audio_url, metadata = _get_info(song_id)
-            print(metadata)
             if audio_url:
                 break
             elif time.time() - start_time > 120:
@@ -161,10 +161,8 @@ def save_song(song_id, output_path=".suno/"):
         response = rget(audio_url, allow_redirects=False, stream=True)
         if response.status_code != 200:
             raise Exception("Could not download song")
-        index = 0
-        while os.path.exists(os.path.join(output_path, f"suno_{index}.mp3")):
-            index += 1
-        path = os.path.join(output_path, f"suno_{index}.mp3")
+        path = os.path.join(output_path, f"suno_{song_id}.mp3")
+        os.makedirs(output_path, exist_ok=True)
         with open(path, "wb") as output_file:
             for chunk in response.iter_content(chunk_size=1024):
                 # If the chunk is not empty, write it to the file.
