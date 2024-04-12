@@ -44,6 +44,7 @@ def generate_music_with_description(gpt_description_prompt="", make_instrumental
         "gpt_description_prompt": gpt_description_prompt,
         "make_instrumental": make_instrumental,
         "mv": mv,
+        "prompt": "",
     }
 
     r = requests.post("http://127.0.0.1:8000/generate/description-mode", data=json.dumps(data))
@@ -143,24 +144,18 @@ def get_info(song_id):
     return data_out, Song_generate_status(data_out["status"])
 
 
-def save_song(song_id, output_path=".suno/"):
+async def save_song(song_id, output_path=".suno/"):
     """
     save given song
     """
-    try:
-        start_time = time.time()
-        while True:
-            audio_url, metadata = _get_info(song_id)
-            if audio_url:
-                break
-            elif time.time() - start_time > 120:
-                raise TimeoutError("Failed to get audio_url within 90 seconds")
-            elif metadata["refund_credits"] == True:
-                return Song_download_status.refund
-            time.sleep(30)
+    await asyncio.sleep(5)
+    audio_url, metadata = _get_info(song_id)
+    if metadata["refund_credits"] == True:
+        return Song_download_status.refund
+    if audio_url:
         response = rget(audio_url, allow_redirects=False, stream=True)
         if response.status_code != 200:
-            raise Exception("Could not download song")
+            return Song_download_status.no_song_yet
         path = os.path.join(output_path, f"suno_{song_id}.mp3")
         os.makedirs(output_path, exist_ok=True)
         with open(path, "wb") as output_file:
@@ -169,7 +164,4 @@ def save_song(song_id, output_path=".suno/"):
                 if chunk:
                     output_file.write(chunk)
         return Song_download_status.complete
-    except TimeoutError:
-        return Song_download_status.timeout
-    except Exception:
-        return Song_download_status.no_song_yet
+    return Song_download_status.no_song_yet
