@@ -4,6 +4,8 @@ import os
 import time
 from enum import Enum
 
+import aiofiles
+import aiohttp
 import requests
 from requests import get as rget
 
@@ -153,15 +155,16 @@ async def save_song(song_id, output_path=".suno/"):
     if metadata["refund_credits"] == True:
         return Song_download_status.refund
     if audio_url:
-        response = rget(audio_url, allow_redirects=False, stream=True)
-        if response.status_code != 200:
-            return Song_download_status.no_song_yet
-        path = os.path.join(output_path, f"suno_{song_id}.mp3")
-        os.makedirs(output_path, exist_ok=True)
-        with open(path, "wb") as output_file:
-            for chunk in response.iter_content(chunk_size=1024):
-                # If the chunk is not empty, write it to the file.
-                if chunk:
-                    output_file.write(chunk)
-        return Song_download_status.complete
+        async with aiohttp.ClientSession() as session:
+            response = await session.get(audio_url, allow_redirects=False)
+            if response.status != 200:
+                return Song_download_status.no_song_yet
+            path = os.path.join(output_path, f"suno_{song_id}.mp3")
+            os.makedirs(output_path, exist_ok=True)
+            async with aiofiles.open(path, mode="wb") as handle:
+                async for chunk in response.content.iter_chunked(1024):
+                    # If the chunk is not empty, write it to the file.
+                    if chunk:
+                        await handle.write(chunk)
+            return Song_download_status.complete
     return Song_download_status.no_song_yet
