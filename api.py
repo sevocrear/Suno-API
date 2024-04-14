@@ -56,7 +56,7 @@ def generate_music_with_description(gpt_description_prompt="", make_instrumental
         id_m = resp["id"]
         clips_ids = [x["id"] for x in resp["clips"]]
         return id_m, clips_ids, Song_generate_status.submitted
-    return id_m, clips_ids, Song_generate_status.error
+    return None, None, Song_generate_status.error
 
 
 def generate_music_with_lyrics(title="Song", lyrics="", tags="Country, catchy,", mv="chirp-v3-0"):
